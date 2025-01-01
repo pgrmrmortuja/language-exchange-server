@@ -50,22 +50,22 @@ async function run() {
             res.send(result);
         })
 
-        
+        app.get('/tutors', async (req, res) => {
 
+            console.log("Fetching tutors...");
+            const tutors = await languageCollection.distinct("username");
 
-        app.get('/categories', async (req, res) => {
-
-            console.log("Fetching categories...");
-            const categories = await languageCollection.distinct("language");
-
-            if (categories.length > 0) {
-                console.log("Categories fetched:", categories);
-                res.send(categories);
+            if (tutors.length > 0) {
+                console.log("Tutors fetched:", tutors);
+                res.send(tutors);
             } else {
-                res.status(404).send({ message: 'No categories found' });
+                res.status(404).send({ message: 'No tutors found' });
             }
 
         });
+
+
+        
 
 
         app.get('/categories/:language', async (req, res) => {
