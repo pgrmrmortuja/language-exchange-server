@@ -36,14 +36,14 @@ async function run() {
             res.send(result);
         })
 
-        
-
-        app.get('/tutorials/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: new ObjectId(id) }
-            const result = await languageCollection.findOne(query);
+        app.get('/tutorials-limited', async (req, res) => {
+            const limit = parseInt(req.query.limit) || 6;
+            const cursor = languageCollection.find().limit(limit); 
+            const result = await cursor.toArray(); 
             res.send(result);
-        })
+        });
+
+        
 
         app.get('/tutors', async (req, res) => {
 
