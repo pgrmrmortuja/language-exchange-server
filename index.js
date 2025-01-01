@@ -43,21 +43,14 @@ async function run() {
             res.send(result);
         });
 
+        app.get('/tutorials/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await languageCollection.findOne(query);
+            res.send(result);
+        })
+
         
-
-        app.get('/tutors', async (req, res) => {
-
-            console.log("Fetching tutors...");
-            const tutors = await languageCollection.distinct("username");
-
-            if (tutors.length > 0) {
-                console.log("Tutors fetched:", tutors);
-                res.send(tutors);
-            } else {
-                res.status(404).send({ message: 'No tutors found' });
-            }
-
-        });
 
 
         app.get('/categories', async (req, res) => {
