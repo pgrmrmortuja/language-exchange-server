@@ -65,7 +65,19 @@ async function run() {
         });
 
 
-        
+        app.get('/categories', async (req, res) => {
+
+            console.log("Fetching categories...");
+            const categories = await languageCollection.distinct("language");
+
+            if (categories.length > 0) {
+                console.log("Categories fetched:", categories);
+                res.send(categories);
+            } else {
+                res.status(404).send({ message: 'No categories found' });
+            }
+
+        });
 
 
         app.get('/categories/:language', async (req, res) => {
@@ -75,12 +87,7 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/myTutorials/:email', async (req, res) => {
-            const email = req.params.email;
-            const filter = { email: email };
-            const result = await languageCollection.find(filter).toArray();
-            res.send(result);
-        })
+        
 
 
 
