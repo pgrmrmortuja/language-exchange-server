@@ -59,13 +59,14 @@ async function run() {
         app.post('/jwt', (req, res) => {
             const user = req.body;
             const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-                expiresIn: '5h'
+                expiresIn: '10h'
             });
 
             res
                 .cookie('token', token, {
                     httpOnly: true,
-                    secure: false
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
                 })
                 .send({ success: true })
         });
@@ -74,7 +75,8 @@ async function run() {
             res
                 .clearCookie('token', {
                     httpOnly: true,
-                    secure: false
+                    secure: process.env.NODE_ENV === 'production',
+                    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
                 })
                 .send({ success: true })
         })
@@ -137,9 +139,15 @@ async function run() {
             res.send(result);
         })
 
-        app.get('/myTutorials/:email', async (req, res) => {
+        app.get('/myTutorials/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
+
+            //token email !== query email
+            if (req.user.email !== req.params.email) {
+                return res.status(403).send({ message: 'forbidden access' })
+            }
+
             const result = await languageCollection.find(filter).toArray();
             res.send(result);
         })
@@ -245,9 +253,15 @@ async function run() {
         })
 
 
-        app.get('/myTutors/:email', async (req, res) => {
+        app.get('/myTutors/:email', verifyToken, async (req, res) => {
             const email = req.params.email;
             const filter = { userEmail: email };
+
+            //token email !== query email
+            if(req.user.email !== req.params.email){
+                return res.status(403).send({message: 'forbidden access'})
+            }
+
             const result = await bookingsCollection.find(filter).toArray();
             res.send(result);
         })
