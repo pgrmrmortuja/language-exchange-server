@@ -10,7 +10,7 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 //middleware
 app.use(cors());
 app.use(express.json());
-
+app.use(cookieParser());
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.dk8ve.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -31,6 +31,21 @@ async function run() {
 
         const usersCollection = database.collection("users");
 
+        //auth related APIs
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+                expiresIn: '5h'
+            });
+
+            res
+                .cookie('token', token, {
+                    httpOnly: true,
+                    secure: false
+                })
+                .send({ success: true })
+        });
+
         //tutorials api's=============================
         app.get('/tutorials', async (req, res) => {
             const cursor = languageCollection.find();
@@ -40,8 +55,8 @@ async function run() {
 
         app.get('/tutorials-limited', async (req, res) => {
             const limit = parseInt(req.query.limit) || 6;
-            const cursor = languageCollection.find().limit(limit); 
-            const result = await cursor.toArray(); 
+            const cursor = languageCollection.find().limit(limit);
+            const result = await cursor.toArray();
             res.send(result);
         });
 
@@ -127,7 +142,7 @@ async function run() {
 
 
         app.get('/review/:id', async (req, res) => {
-            const id = req.params.id; 
+            const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
 
             const tutor = await languageCollection.findOne(filter);
@@ -142,24 +157,24 @@ async function run() {
 
 
         app.patch('/review/:id', async (req, res) => {
-            const id = req.params.id; 
-            const { increment } = req.body; 
-        
+            const id = req.params.id;
+            const { increment } = req.body;
+
             const tutorFilter = { _id: new ObjectId(id) };
             const bookingFilter = { tutorId: id };
-        
+
             try {
 
                 const languageUpdate = await languageCollection.updateOne(
                     tutorFilter,
                     { $inc: { review: increment || 1 } }
                 );
-        
+
                 const bookingUpdate = await bookingsCollection.updateMany(
                     bookingFilter,
                     { $inc: { review: increment || 1 } }
                 );
-        
+
                 if (languageUpdate.modifiedCount > 0 || bookingUpdate.modifiedCount > 0) {
                     res.send({
                         message: 'Review updated successfully!',
@@ -174,7 +189,7 @@ async function run() {
                 res.status(500).send({ message: 'Internal server error!' });
             }
         });
-        
+
 
 
 
