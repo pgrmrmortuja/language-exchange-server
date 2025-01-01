@@ -30,7 +30,11 @@ async function run() {
         const usersCollection = database.collection("users");
 
         //tutorials api's=============================
-        
+        app.get('/tutorials', async (req, res) => {
+            const cursor = languageCollection.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
 
         app.get('/tutorials-limited', async (req, res) => {
             const limit = parseInt(req.query.limit) || 6;
